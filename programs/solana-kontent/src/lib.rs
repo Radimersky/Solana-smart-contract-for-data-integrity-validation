@@ -7,18 +7,18 @@ declare_id!("4C9v8ZmgtEbx8dDGb7YDXrsLbNswU3HAzhqBCKzUn21N");
 pub mod solana_kontent {
     use super::*;
 
-	pub fn save_variant(ctx: Context<SaveVariant>, last_modified: i64, variant_id: String) -> Result<()> {
+	pub fn save_variant(ctx: Context<SaveVariant>, item_id: String, variant_id: String) -> Result<()> {
 		let variant: &mut Account<Variant> = &mut ctx.accounts.variant; 
 		let author: &Signer = &ctx.accounts.author; 
 		let clock: Clock = Clock::get().unwrap();
 
-		if variant_id.chars().count() != 36 {
+		if variant_id.chars().count() > 36 {
             return Err(error!(ErrorCode::TopicTooLong));
         }
 	
 		variant.author = *author.key; 
 		variant.account_created = clock.unix_timestamp;
-		variant.last_modified = last_modified;
+		variant.item_id = item_id;
 		variant.variant_id = variant_id;
 	
 		Ok(()) 
@@ -64,8 +64,6 @@ impl Variant {
 
 #[error_code]
 pub enum ErrorCode {
-    #[msg("The provided topic should be 50 characters long maximum.")]
+    #[msg("The ID should be 36 characters long.")]
     TopicTooLong,
-    #[msg("The provided content should be 280 characters long maximum.")]
-    ContentTooLong,
 }

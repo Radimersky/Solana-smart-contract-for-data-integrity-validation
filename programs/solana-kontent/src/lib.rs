@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::system_program;
 
 declare_id!("4C9v8ZmgtEbx8dDGb7YDXrsLbNswU3HAzhqBCKzUn21N");
 
@@ -6,18 +7,37 @@ declare_id!("4C9v8ZmgtEbx8dDGb7YDXrsLbNswU3HAzhqBCKzUn21N");
 pub mod solana_kontent {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        Ok(())
-    }
+	pub fn save_variant(ctx: Context<SaveVariant>, last_modified: i64, variant_id: String) -> Result<()> {
+		let variant: &mut Account<Variant> = &mut ctx.accounts.variant; 
+		let author: &Signer = &ctx.accounts.author; 
+		let clock: Clock = Clock::get().unwrap();
+
+		if variant_id.chars().count() != 36 {
+            return Err(error!(ErrorCode::TopicTooLong));
+        }
+	
+		variant.author = *author.key; 
+		variant.account_created = clock.unix_timestamp;
+		variant.last_modified = last_modified;
+		variant.variant_id = variant_id;
+	
+		Ok(()) 
+	}
 }
 
 #[derive(Accounts)]
-pub struct Initialize {}
+pub struct SaveVariant<'info> { 
+	#[account(init, payer = author, space = Variant::LEN)]
+	pub variant: Account<'info, Variant>, 
+	#[account(mut)]
+	pub author: Signer<'info>, 
+	pub system_program: Program<'info, System>,
+}
 
 #[account]
 pub struct Variant {
 	pub account_created: i64,
-	pub last_mod_timestamp: i64,
+	pub last_modified: i64,
 	pub variant_id: String, // "dd1439d5-4ee2-4895-a4e4-5b0d9d8c754e"
 	pub item_id: String,
 	pub project_id: String,
@@ -40,4 +60,12 @@ impl Variant {
 		+ PUBLIC_KEY_LENGTH // Author. 
 		+ HASH_LENGTH 
 		+ HASH_SIGNATURE_LENGTH;
+}
+
+#[error_code]
+pub enum ErrorCode {
+    #[msg("The provided topic should be 50 characters long maximum.")]
+    TopicTooLong,
+    #[msg("The provided content should be 280 characters long maximum.")]
+    ContentTooLong,
 }

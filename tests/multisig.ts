@@ -3,6 +3,16 @@ import { Program } from "@project-serum/anchor";
 import { SolanaKontent } from "../target/types/solana_kontent";
 import * as assert from "assert";
 
+interface Variant {
+  //accountCreated: number;
+  //lastModified: number;
+  variantId: string;
+  //itemId: string;
+  //projectId: string;
+  //variantHash: string;
+  //author: string;
+}
+
 describe("multisig", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.Provider.env());
@@ -60,9 +70,21 @@ describe("multisig", () => {
       },
     ];
     const newOwners = [ownerA.publicKey, ownerB.publicKey, ownerD.publicKey];
-    const data = program.coder.instruction.encode("set_owners", {
-      owners: newOwners,
-    });
+    //const data = program.coder.instruction.encode("set_owners", {
+    //  owners: newOwners,
+    //});
+    
+    const variant: Variant = {
+      //accountCreated: new anchor.BN(1651041404),
+      //lastModified: new anchor.BN(1551041404),
+      variantId: 'dd1439d5-4ee2-4895-a4e4-5b0d9d8c754e',
+      //itemId: 'ad1439d5-4ee2-4895-a4e4-5b0d9d8c754e',
+      //projectId: 'bd1439d5-4ee2-4895-a4e4-5b0d9d8c754e',
+      //variantHash: '0x7368b03bea99c5525aa7a9ba0b121fc381a4134f90d0f1b4f436266ad0f2b43b',
+      //author: '0x2faf487a4414fe77e2327f0bf4ae2a264a776ad2'
+    }
+
+    const data = await program.coder.accounts.encode("Variant", {variantId: 'dd1439d5-4ee2-4895-a4e4-5b0d9d8c754e'});
 
     const transaction = anchor.web3.Keypair.generate();
     const txSize = 1000; // Big enough, cuz I'm lazy.
@@ -85,12 +107,18 @@ describe("multisig", () => {
       transaction.publicKey
     );
 
+    const txAccountData: Variant = program.coder.accounts.decode("Variant", txAccount.data as Buffer);
+
     assert.ok(txAccount.programId.equals(pid));
     assert.deepStrictEqual(txAccount.accounts, accounts);
     assert.deepStrictEqual(txAccount.data, data);
     assert.ok(txAccount.multisig.equals(multisig.publicKey));
     assert.deepStrictEqual(txAccount.didExecute, false);
     assert.ok(txAccount.ownerSetSeqno === 0);
+
+    //assert.ok(txAccountData.accountCreated === variant.accountCreated);
+    //assert.ok(txAccountData.projectId == variant.projectId);
+    //assert.ok(txAccountData.author === variant.author);
 
     // Other owner approves transactoin.
     await program.rpc.approve({

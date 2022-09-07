@@ -34,10 +34,10 @@ describe("solana-kontent", () => {
     signers: anchor.web3.Keypair[]
     ) => {
     await program.rpc.saveVariant(
+      variantData.projectId, 
+      variantData.itemCodename,
       variantData.variantId, 
       variantData.itemId, 
-      variantData.itemCodename,
-      variantData.projectId, 
       variantData.variantHash,
       variantData.variantHashSignature,
       variantData.lastModified,
@@ -125,12 +125,50 @@ describe("solana-kontent", () => {
     }))
   });
   
-  it('can get variants by variant ID', async () => {
+  it('can get variants by project ID', async () => {
     const variants = await program.account.variant.all([
         {
             memcmp: {
                 offset: 8 + // Discriminator.
                     36, // Author public key.
+                bytes: bs58.encode(Buffer.from(variantData.projectId)),
+            }
+        }
+    ]);
+
+    assert.equal(variants.length, 2);
+    assert.ok(variants.every(variant => {
+        return variant.account.projectId === variantData.projectId;
+    }))
+  });
+
+  it('can get variants by item codename', async () => {
+    const variants = await program.account.variant.all([
+        {
+            memcmp: {
+                offset: 8 + // Discriminator.
+                    36 + // Author public key.
+                    40, // Variant ID.
+                bytes: bs58.encode(Buffer.from(variantData.itemCodename)),
+            }
+        }
+    ]);
+
+    console.log(Buffer.from(variantData.variantId).length)
+    assert.equal(variants.length, 2);
+    assert.ok(variants.every(variant => {
+        return variant.account.itemCodename === variantData.itemCodename;
+    }))
+  });
+
+  it('can get variants by variant ID', async () => {
+    const variants = await program.account.variant.all([
+        {
+            memcmp: {
+                offset: 8 + // Discriminator.
+                    36 + // Author public key.
+                    40 + // Variant ID.
+                    40, // Item ID.
                 bytes: bs58.encode(Buffer.from(variantData.variantId)),
             }
         }
@@ -139,45 +177,6 @@ describe("solana-kontent", () => {
     assert.equal(variants.length, 2);
     assert.ok(variants.every(variant => {
         return variant.account.variantId === variantData.variantId;
-    }))
-  });
-
-  it('can get variants by item ID', async () => {
-    const variants = await program.account.variant.all([
-        {
-            memcmp: {
-                offset: 8 + // Discriminator.
-                    36 + // Author public key.
-                    40, // Variant ID.
-                bytes: bs58.encode(Buffer.from(variantData.itemId)),
-            }
-        }
-    ]);
-
-    console.log(Buffer.from(variantData.variantId).length)
-    assert.equal(variants.length, 2);
-    assert.ok(variants.every(variant => {
-        return variant.account.itemId === variantData.itemId;
-    }))
-  });
-
-  it('can get variants by project ID', async () => {
-    const variants = await program.account.variant.all([
-        {
-            memcmp: {
-                offset: 8 + // Discriminator.
-                    36 + // Author public key.
-                    40 + // Variant ID.
-                    40, // Item ID.
-                bytes: bs58.encode(Buffer.from(variantData.projectId)),
-            }
-        }
-    ]);
-    
-    console.log(Buffer.from(variantData.variantId).length)
-    assert.equal(variants.length, 2);
-    assert.ok(variants.every(variant => {
-        return variant.account.itemId === variantData.itemId;
     }))
   });
 

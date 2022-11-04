@@ -16,12 +16,12 @@ interface Variant {
 
 const variantData: Variant = {
   lastModified: new anchor.BN(1551041404),
-  variantId: 'bb1439d5-4ee2-4895-a4e4-5b0d9d8c754e',
+  variantId: 'default',
   itemId: 'ad1439d5-4ee2-4895-a4e4-5b0d9d8c754e',
-  itemCodename: 'ad1439d5-4ee2-4895-a4e4-5b0d9d8c754e',
+  itemCodename: 'some_codename_that_is_sixty_characters_long_which_is_maxsize',
   projectId: 'bd1439d5-4ee2-4895-a4e4-5b0d9d8c754e',
-  variantHash: '0x7368b03bea99c5525aa7a9ba0b121fc381a4134f90d0f1b4f436266ad0f2b43b',
-  variantHashSignature: '0x7368b03bea99c5525aa7a9ba0b121fc381a4134f90d0f1b4f436266ad0f2b43b',
+  variantHash: '5f951f757209cd0a6d5c153fa3c2d83028476cfe',
+  variantHashSignature: 'MEYCIQCdl6nwzByuBcXgXY+HNjwqqxspd34h2KAJZU+vBm45swIhALZAtmWSOEE4rpvZLQcJsVGjETbD0I9qQG/iJryNkWqA',
 }
 
 const differentAuthor = anchor.web3.Keypair.generate();
@@ -115,10 +115,8 @@ describe("solana-kontent", () => {
             }
         }
     ]);
-
-    console.log(variants);
-    console.log(variants[0].account.variantId);
-    console.log(variants[0].account);
+    console.log(authorPubKey);
+    console.log(authorPubKey.toBuffer());
     assert.equal(variants.length, 1);
     assert.ok(variants.every(variant => {
       return variant.account.author.toBase58() === authorPubKey.toBase58()
@@ -130,7 +128,8 @@ describe("solana-kontent", () => {
         {
             memcmp: {
                 offset: 8 + // Discriminator.
-                    36, // Author public key.
+                     32 + // Author public key.
+                     4, // String length prefix 
                 bytes: bs58.encode(Buffer.from(variantData.projectId)),
             }
         }
@@ -147,14 +146,14 @@ describe("solana-kontent", () => {
         {
             memcmp: {
                 offset: 8 + // Discriminator.
-                    36 + // Author public key.
-                    40, // Variant ID.
+                    32 + // Author public key.
+                    4 + 36 + // String length prefix + Project ID.
+                    4, // String length prefix 
                 bytes: bs58.encode(Buffer.from(variantData.itemCodename)),
             }
         }
     ]);
 
-    console.log(Buffer.from(variantData.variantId).length)
     assert.equal(variants.length, 2);
     assert.ok(variants.every(variant => {
         return variant.account.itemCodename === variantData.itemCodename;
@@ -166,9 +165,10 @@ describe("solana-kontent", () => {
         {
             memcmp: {
                 offset: 8 + // Discriminator.
-                    36 + // Author public key.
-                    40 + // Variant ID.
-                    40, // Item ID.
+                    32 + // Author public key.
+                    4 + 36 + // String length prefix + Project ID.
+                    4 + 60 + // String length prefix + Item codename.
+                    4, // String length prefix 
                 bytes: bs58.encode(Buffer.from(variantData.variantId)),
             }
         }

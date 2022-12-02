@@ -7,7 +7,6 @@ import * as bs58 from "bs58";
 interface Variant {
   lastModified: number;
   variantId: string;
-  itemId: string;
   itemCodename: string,
   projectId: string;
   variantHash: string;
@@ -17,7 +16,6 @@ interface Variant {
 const variantData: Variant = {
   lastModified: new anchor.BN(1551041404),
   variantId: 'default',
-  itemId: 'ad1439d5-4ee2-4895-a4e4-5b0d9d8c754e',
   itemCodename: 'some_codename_that_is_sixty_characters_long_which_is_maxsize',
   projectId: 'bd1439d5-4ee2-4895-a4e4-5b0d9d8c754e',
   variantHash: '5f951f757209cd0a6d5c153fa3c2d83028476cfe',
@@ -37,7 +35,6 @@ describe("solana-kontent", () => {
       variantData.projectId, 
       variantData.itemCodename,
       variantData.variantId, 
-      variantData.itemId, 
       variantData.variantHash,
       variantData.variantHashSignature,
       variantData.lastModified,
@@ -66,7 +63,6 @@ describe("solana-kontent", () => {
     const variantAccount = await program.account.variant.fetch(variant.publicKey);
 
      assert.equal(variantAccount.variantId, variantData.variantId);
-     assert.equal(variantAccount.itemId, variantData.itemId);
      assert.equal(variantAccount.itemCodename, variantData.itemCodename);
      assert.equal(variantAccount.projectId, variantData.projectId);
      assert.equal(variantAccount.variantHash, variantData.variantHash);
@@ -88,7 +84,6 @@ describe("solana-kontent", () => {
     const variantAccount = await program.account.variant.fetch(variant.publicKey);
 
     assert.equal(variantAccount.variantId, variantData.variantId);
-    assert.equal(variantAccount.itemId, variantData.itemId);
     assert.equal(variantAccount.itemCodename, variantData.itemCodename);
     assert.equal(variantAccount.projectId, variantData.projectId);
     assert.equal(variantAccount.variantHash, variantData.variantHash);
@@ -106,7 +101,6 @@ describe("solana-kontent", () => {
 
   it('can get variants of single author', async () => {
     const authorPubKey = differentAuthor.publicKey;
-    console.log(authorPubKey.toBase58().length);
     const variants = await program.account.variant.all([
         {
             memcmp: {
@@ -115,8 +109,6 @@ describe("solana-kontent", () => {
             }
         }
     ]);
-    console.log(authorPubKey);
-    console.log(authorPubKey.toBuffer());
     assert.equal(variants.length, 1);
     assert.ok(variants.every(variant => {
       return variant.account.author.toBase58() === authorPubKey.toBase58()
@@ -230,14 +222,14 @@ it('cannot delete variant of other author', async () => {
   ];
 
   guidTestData.forEach((guidData) => {
-    it('fails with guid ' + guidData.guid + 'that is not 36 chars long', async () => {
+    it('fails with project id' + guidData.guid + 'that is not 36 chars long', async () => {
       const variant = anchor.web3.Keypair.generate();
       
       try {
         await program.rpc.saveVariant(
           guidData.guid, 
-          variantData.itemId, 
-          variantData.projectId, 
+          variantData.itemCodename,
+          variantData.variantId, 
           variantData.variantHash,
           variantData.variantHashSignature,
           variantData.lastModified,
@@ -249,10 +241,11 @@ it('cannot delete variant of other author', async () => {
             },
             signers: [variant],
         });
+
         assert.fail();
       } catch (err) {
         assert.equal(err.code, 6001);
-        assert.equal(err.msg, 'The GUID should be 36 characters long.');
+        assert.equal(err.msg, 'The project id should be exactly 36 chracters long.');
       }
     });
   });

@@ -11,23 +11,16 @@ Relates with these repositories:
 // Make sure you’re on the localnet.
 
 solana config set --url localhost
-
 // And check your Anchor.toml file.
-
 // Run the tests.
-
 anchor test
 
 // Build, deploy and start a local ledger.
-
 anchor localnet
-
 // Or
-
 solana-test-validator
 
 anchor build
-
 anchor deploy
 
 ## How to run on devnet

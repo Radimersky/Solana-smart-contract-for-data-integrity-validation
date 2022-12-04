@@ -19,27 +19,26 @@ Run the tests.
 Build, deploy and start a local ledger.
 - anchor localnet
 
-// Or
+Or
 
 - solana-test-validator
 
-// Then
+Then
 
 - anchor build
 - anchor deploy
 
 ## How to run on devnet
 
-solana config set --url devnet
+- solana config set --url devnet
 
-// And update your Anchor.toml file to devnet.
+And update your Anchor.toml file to devnet.
 
-// Airdrop yourself some money if necessary.
+Airdrop yourself some money if necessary.
 
-solana airdrop 5
+- solana airdrop 5
 
-// Build and deploy to devnet.
+Build and deploy to devnet.
 
-anchor build
-
-anchor deploy
+- anchor build
+- anchor deploy

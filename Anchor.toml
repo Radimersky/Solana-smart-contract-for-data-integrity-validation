@@ -1,13 +1,20 @@
 [features]
 seeds = false
+
 [programs.localnet]
-solana_kontent = "4C9v8ZmgtEbx8dDGb7YDXrsLbNswU3HAzhqBCKzUn21N"
+solana_kontent = "8rDWSauWEjKVZ6bKM1s8DrTtuLsqj2Eo3xSqUx9RvtfY"
+
+[programs.devnet]
+solana_twitter = "8rDWSauWEjKVZ6bKM1s8DrTtuLsqj2Eo3xSqUx9RvtfY"
+
+[programs.mainnet]
+solana_twitter = "8rDWSauWEjKVZ6bKM1s8DrTtuLsqj2Eo3xSqUx9RvtfY"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "/home/radimersky/.config/solana/id.json"
 
 [scripts]

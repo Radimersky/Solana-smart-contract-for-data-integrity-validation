@@ -9,19 +9,20 @@ Relates with these repositories:
 ## How to run localy
 
 // Make sure you’re on the localnet.
+- solana config set --url localhost
 
-solana config set --url localhost
 // And check your Anchor.toml file.
+
 // Run the tests.
-anchor test
+- anchor test
 
 // Build, deploy and start a local ledger.
-anchor localnet
+- anchor localnet
 // Or
-solana-test-validator
-
-anchor build
-anchor deploy
+- solana-test-validator
+// Then
+- anchor build
+- anchor deploy
 
 ## How to run on devnet
 
